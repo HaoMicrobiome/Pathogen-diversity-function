@@ -24,7 +24,13 @@ require_packages(c("mediation", "openxlsx"))
 bootstrap_replicates <- 5000L
 seed <- 2025L
 expected_windows <- 245L  # Set NULL only for an explicitly different input dataset.
-required <- c("WindowID", "WindowSize", "PlantPathogenRelativeAbundance", "mutiBC", "DiversityEffect")
+# root_effect_strength is the window mean of paired rhizosphere-bulk soil
+# community dissimilarity: the equal-weight mean of bacterial and fungal
+# Bray-Curtis dissimilarities, calculated from ASV relative abundances.
+# root_effect_strength_without_pathogens uses the same definition after removing
+# plant-pathogenic fungal ASVs and renormalizing the fungal abundances.
+# X = pathogen abundance; M = root-effect strength; Y = diversity effect.
+required <- c("WindowID", "WindowSize", "PlantPathogenRelativeAbundance", "root_effect_strength", "DiversityEffect")
 w <- read_input(repo, "mediation_windows.csv", required)
 unique_ids(w$WindowID, "WindowID")
 numeric_columns(w, c("WindowID", "WindowSize"))
@@ -33,8 +39,8 @@ if (!identical(as.numeric(w$WindowID), as.numeric(seq_len(nrow(w)))))
 if (anyNA(w$WindowSize) || any(w$WindowSize != 60L)) stop("Expected 60-sample windows.")
 if (!is.null(expected_windows) && nrow(w) != expected_windows) stop("Expected 245 paired-sample windows, not the 247 Figure 2 RS windows.")
 if (is.unsorted(w$WindowID)) stop("Preserve ascending WindowID order.")
-cases <- c(AllFungi = "mutiBC")
-if ("mutiBC_NoPathogen" %in% names(w)) cases <- c(cases, PathogenExcluded = "mutiBC_NoPathogen")
+cases <- c(AllFungi = "root_effect_strength")
+if ("root_effect_strength_without_pathogens" %in% names(w)) cases <- c(cases, PathogenExcluded = "root_effect_strength_without_pathogens")
 numeric_columns(w, c("PlantPathogenRelativeAbundance", unname(cases), "DiversityEffect"), allow_missing = TRUE)
 if (any(w$PlantPathogenRelativeAbundance <= 0 | w$PlantPathogenRelativeAbundance > 100, na.rm = TRUE))
   stop("Exposure must be arithmetic-mean pathogen percentage in (0, 100].")

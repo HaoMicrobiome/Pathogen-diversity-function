@@ -19,6 +19,8 @@ Indices must be prepared before windowing. Do not normalize separately within wi
 
 ## 2. `mediation_windows.csv`
 
+ASVs are amplicon sequence variants. The exposure is pathogen abundance, the mediator is root-effect strength, and the response is the diversity effect.
+
 One row per 60-sample window rebuilt from the **304 matched RS/BS pairs**, in ascending WindowID order. With step 1, there are 245 windows, not the 247 windows obtained from all 306 RS samples in Figure 2. Retain source row order for exact bootstrap reproducibility.
 
 | Column | Type / meaning |
@@ -26,9 +28,9 @@ One row per 60-sample window rebuilt from the **304 matched RS/BS pairs**, in as
 | WindowID | Unique sequential numeric window identifier. |
 | WindowSize | Always 60 for this analysis. |
 | PlantPathogenRelativeAbundance | Arithmetic mean of pathogen percentages in the paired-sample window; not a log mean. |
-| mutiBC | Window mean of the per-pair average of bacterial and fungal Bray-Curtis dissimilarities, each computed using within-sample ASV relative abundances. All fungal ASVs are retained. |
+| root_effect_strength | Window-mean root-effect strength: first calculate bacterial and fungal Bray-Curtis dissimilarities between each paired rhizosphere and bulk soil sample using ASV relative abundances; average the two dissimilarities with equal weights, then average across pairs in the window. All fungal ASVs are retained. |
 | DiversityEffect | Window main-model slope, multiplied by SD(Multidiversity)/SD(Multifunctionality) calculated from the full 306-sample RS reference. |
-| mutiBC_NoPathogen | Optional sensitivity mediator: fungal pathogen ASVs excluded from both compartments and fungal relative abundances renormalized before Bray-Curtis; bacterial component unchanged. |
+| root_effect_strength_without_pathogens | Optional window-mean root-effect strength for sensitivity analysis. Use the same calculation as above, but remove plant-pathogenic fungal ASVs from both soil compartments and renormalize the remaining fungal relative abundances before computing fungal Bray-Curtis dissimilarity. The bacterial component is unchanged. |
 
 Root-effect strength is between 0 and 1. Keep exposure and mediator on their pre-z-score scales; the script standardizes across complete windows. This input cannot be generated merely by renaming columns in the Figure 2 sliding-window export. Use only valid matched-window estimates; do not fabricate a window mediator from sample-level or unmatched tables.
 
